@@ -6,6 +6,7 @@ A centralized infrastructure simulation representing a full operational IT envir
 This project simulates enterprise network telemetry, including:
 - NetFlow / IPFIX
 - SNMP metrics
+- WMI metrics
 - Syslog
 - Traffic generation
 
