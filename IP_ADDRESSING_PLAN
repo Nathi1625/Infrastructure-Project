@@ -5,7 +5,7 @@ The design follows a structured, scalable, and easy-to-troubleshoot approach.
 
 ---
 
-## WAN Links
+## WAN links
 
 Point-to-point WAN links use **/30 subnets** to conserve IP space.
 
