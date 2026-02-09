@@ -3,6 +3,18 @@
 ## Overview
 A centralized infrastructure simulation representing a full operational IT environment. It includes virtual servers, applications, and network devices with automated logs, metrics, and network traffic, providing a shared and reliable data source for testing, demonstrations, training, and troubleshooting.
 
+## Goals
+
+- Simulate a hub-and-spoke enterprise network across three South African sites
+- Validate connectivity, security, and monitoring
+- Deploy core infrastructure:
+  - Routers, switches, firewalls
+  - Servers (Active Directory, SQL, Web, DHCP)
+  - Endpoint PCs
+- Generate telemetry data (SNMP, NetFlow, Syslog, WMI metrics)
+- Aggregate data centrally for export to monitoring and AIOps platforms
+- Host workloads on Proxmox and orchestrate networking with GNS3
+
 This project simulates enterprise network telemetry, including:
 - NetFlow / IPFIX
 - SNMP metrics
