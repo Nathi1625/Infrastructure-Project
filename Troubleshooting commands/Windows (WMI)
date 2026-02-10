@@ -1,0 +1,41 @@
+# Windows Troubleshooting – Quick Command Reference  
+(WMI, DNS, Active Directory Basics)
+
+## WMI (Windows Management Instrumentation) Basics
+
+| Command                                              | Description / Why Use It                                        |
+|------------------------------------------------------|-----------------------------------------------------------------|
+| `wmic os get caption, version, buildnumber`          | Quick test: Is local WMI working? Shows OS info if yes.        |
+| `wmic /node:TARGET-PC os get caption`                | Test remote WMI to another computer (replace TARGET-PC).       |
+| `net stop winmgmt && net start winmgmt`              | Restart WMI service (fixes most "access denied" or broken WMI).|
+| Run → `wbemtest`                                     | GUI tool: Connect to `\\.\root\cimv2` (local) to test WMI.     |
+| `winmgmt /verifyrepository`                          | Check if WMI repository is consistent (inconsistent = problem).|
+
+## DNS Basics (Often the root of AD problems!)
+
+| Command                                              | Description / Why Use It                                        |
+|------------------------------------------------------|-----------------------------------------------------------------|
+| `ipconfig /flushdns`                                 | Clear bad DNS cache (do this first for name resolution issues).|
+| `ipconfig /registerdns`                              | Force this PC to re-register its DNS records with the server.  |
+| `ipconfig /all`                                      | Show DNS servers configured (DCs should point to internal DNS).|
+| `nslookup dc01.yourdomain.local`                     | Test if a DC name resolves correctly.                           |
+| In nslookup: `set type=SRV` then `_ldap._tcp.yourdomain.local` | Check if domain controllers are found via SRV records.         |
+
+## Active Directory Basics (Run on Domain Controller)
+
+| Command                                              | Description / Why Use It                                        |
+|------------------------------------------------------|-----------------------------------------------------------------|
+| `dcdiag /q`                                          | Quick AD health check — only shows errors (start here!).       |
+| `dcdiag /test:dns`                                   | Test DNS specifically from AD perspective.                      |
+| `repadmin /replsummary`                              | Check replication between all DCs (0 failures = healthy).      |
+| `netdom query fsmo`                                  | Show which DCs hold FSMO roles (important for many fixes).     |
+| `repadmin /syncall /A /e /d`                         | Force full AD replication across all DCs.                       |
+
+## Super Simple Windows Troubleshooting Workflow
+
+1. DNS first → `ipconfig /all` (correct DNS servers?) → `ipconfig /flushdns` → `ipconfig /registerdns`
+2. Test name resolution → `nslookup` your domain / DC
+3. On DC → `dcdiag /q` (any errors?)
+4. Replication → `repadmin /replsummary`
+5. WMI broken? → `wmic os get caption` fails → restart service
+
