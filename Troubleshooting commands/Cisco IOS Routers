@@ -1,0 +1,40 @@
+### Cisco IOS
+### Pings
+
+ping <MikroTik-OSPF-IP> source <local-OSPF-intf-IP> repeat 20
+show arp | include <MikroTik-IP>
+show mac address-table interface <facing-intf>          # if L2 switch involved
+
+### OSPF Neighbor & Adjacency Status (Most Important Commands)
+
+show ip ospf neighbor                                   # neighbor table + state
+show ip ospf neighbor detail                            # timers, MTU, options, auth, priority
+show ip ospf interface brief                            # quick interface overview
+show ip ospf interface <intf>                           # detailed: hello/dead, network type, cost, MTU
+show ip ospf                                            # global: router-id, areas, process, ref bandwidth
+
+### OSPF Routes & Database
+
+show ip route ospf                                      # only OSPF routes
+show ip ospf database                                   # LSDB summary
+show ip ospf database router                            # detailed router (Type-1) LSAs
+show ip ospf database external                          # external (Type-5) if redistribution
+
+### Logging & Real-Time Debugging
+
+show logging | include OSPF
+debug ip ospf hello
+debug ip ospf adj
+debug ip ospf events
+debug ip ospf packet                                    # verbose – use ACL to filter if needed
+undebug all                                             # stop debugs!
+terminal monitor                                        # see debugs in SSH/console
+
+### Quick Resets (When Stuck – Use Carefully!)
+
+clear ip ospf process                                   # full reset (all adjacencies drop!)
+clear ip ospf neighbor <neighbor-IP>                    # targeted clear
+
+### Firewall / Protocol Allows (Don't Forget!)
+
+access-list 100 permit ospf any any
