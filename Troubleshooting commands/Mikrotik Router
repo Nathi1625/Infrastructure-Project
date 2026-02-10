@@ -1,5 +1,5 @@
-###MikroTik OSPF & Network Troubleshooting Cheat Sheet
-###Basic Connectivity
+### MikroTik OSPF & Network Troubleshooting Cheat Sheet
+### Basic Connectivity
 
 /ping <Cisco-OSPF-IP> interface=vmbr2 count=20       # basic reachability
 /interface bridge host print where bridge=vmbr2     # learned MACs
