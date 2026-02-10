@@ -1,0 +1,20 @@
+1. Check if the VLANs exist and which ports are in them
+
+#show vlan brief
+
+2. Check one specific VLAN
+
+#show vlan id 40
+
+3. Check trunk ports (links between switches or to router)
+
+#show interfaces trunk
+
+4. Check the configuration and mode of a specific port
+
+# show interfaces GigabitEthernet1/0/5 switchport
+
+5. Quick port status overview
+
+#show interfaces status
+
