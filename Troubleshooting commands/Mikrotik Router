@@ -5,7 +5,7 @@
 /interface bridge host print where bridge=vmbr2     # learned MACs
 /ip arp print where interface~"vmbr|ether|vlan"    # ARP table check
 
-OSPF Neighbor & Adjacency
+### OSPF Neighbor & Adjacency
 
 /routing ospf neighbor print detail                     # neighbor state, DR/BDR, timers, uptime
 /routing ospf neighbor print detail where state!=full   # non-full neighbors only
@@ -14,25 +14,25 @@ OSPF Neighbor & Adjacency
 /routing ospf instance print detail                     # instances, router-id, redistribution
 /routing ospf area print                                # configured areas
 
-OSPF Routes & Database
+### OSPF Routes & Database
 
 /routing ospf route print                               # OSPF routes in table
 /ip route print where active and gateway-status~"O"    # full table with OSPF entries
 /routing ospf lsa print                                 # LSDB overview
 /routing ospf lsa print detail where type=router        # Type-1 LSAs
 
-Logging & Real-Time Debug
+### Logging & Real-Time Debug
 
 /system logging add topics=ospf,route,!raw action=memory disabled=no
 /log print follow where topics~"ospf|route"           # live logs (MTU/auth/hello errors)
 /system logging remove [find topics~"ospf"]          # disable logging
 
-Quick Resets
+### Quick Resets
 
 /routing ospf instance reset [find]                    # restart OSPF process
 /routing ospf instance disable [find]; /routing ospf instance enable [find]  # full restart
 
-Firewall / Protocol Allow
+### Firewall / Protocol Allow
 
 /ip firewall filter add chain=input action=accept protocol=ospf place-before=0 comment="Allow OSPF (protocol 89)"
 
