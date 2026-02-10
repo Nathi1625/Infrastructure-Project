@@ -1,0 +1,73 @@
+# Linux Servers – Basic SNMP Troubleshooting Cheat Sheet
+
+Quick reference for SNMP on Linux (Ubuntu, Debian, CentOS/RHEL, Rocky, AlmaLinux, etc.).  
+Focus: snmpd (agent) is running, responding to queries, and providing correct data.
+
+Run most commands as root or with sudo.
+
+## 1. Check if SNMP is Installed & Running
+
+| Command                                      | Description / Why Use It                                      |
+|----------------------------------------------|----------------------------------------------------------------|
+| `systemctl status snmpd`                     | Is snmpd service running? (systemd systems: Ubuntu 18+, RHEL 7+) |
+| `ps aux \| grep snmpd`                       | Quick check if snmpd process is alive (fallback for older systems) |
+| `dpkg -l \| grep snmp`                       | Debian/Ubuntu: Is net-snmp installed? (look for snmpd)         |
+| `rpm -qa \| grep net-snmp`                   | RHEL/CentOS/Rocky/Alma: Is net-snmp and net-snmp-utils installed? |
+
+If not running → `sudo systemctl start snmpd` and `sudo systemctl enable snmpd`
+
+## 2. Basic Local SNMP Test (from the server itself)
+
+| Command                                      | Description / Why Use It                                      |
+|----------------------------------------------|----------------------------------------------------------------|
+| `snmpwalk -v2c -c public localhost .1.3.6.1.2.1.1` | Walks system group (sysDescr, sysUpTime, etc.) – should return data |
+| `snmpget -v2c -c public localhost sysName.0` | Gets just the hostname – very quick test                       |
+| `snmpget -v2c -c public localhost .1.3.6.1.4.1.2021.11.9.0` | CPU user time (UCD-SNMP-MIB) – common monitoring check |
+| `snmpget -v2c -c public localhost .1.3.6.1.2.1.25.1.1.0` | Host resources: system uptime                                  |
+
+Replace `public` with your real community string if different.
+
+## 3. Test SNMP from Another Machine (most important!)
+
+From your monitoring server (Zabbix, Nagios, LibreNMS, PRTG, etc.):
+
+| Command (run on monitoring server)           | Description / Why Use It                                      |
+|----------------------------------------------|----------------------------------------------------------------|
+| `snmpwalk -v2c -c public LINUX-SERVER-IP .1.3.6.1.2.1.1` | Full system info – should work if firewall & config are OK     |
+| `snmpget -v2c -c public 192.168.10.50 sysDescr.0` | Test basic reachability and response                           |
+| `snmpwalk -v 1 -c public LINUX-SERVER-IP`    | Try SNMP v1 (some old systems only support v1)                 |
+
+Common failure: "Timeout: No Response from..." → firewall, wrong community, snmpd not listening, or bind issue.
+
+## 4. Firewall & Listening Checks
+
+| Command                                      | Description / Why Use It                                      |
+|----------------------------------------------|----------------------------------------------------------------|
+| `ss -tuln \| grep :161`                      | Is snmpd listening on UDP 161? (should show 0.0.0.0:161 or :::161) |
+| `sudo ufw status \| grep snmp`               | Ubuntu: Is SNMP allowed in UFW?                                |
+| `sudo firewall-cmd --list-all \| grep snmp`  | RHEL/Firewalld: Is snmp service allowed?                       |
+| `sudo iptables -L -n \| grep 161`            | Old iptables: Look for rules blocking/allowing UDP 161         |
+
+Quick fix examples:
+- Ubuntu: `sudo ufw allow from 192.168.10.0/24 to any port 161 proto udp`
+- Firewalld: `sudo firewall-cmd --permanent --add-service=snmp; sudo firewall-cmd --reload`
+
+## 5. Common Config File Locations & Quick Checks
+
+| File / Command                               | What to Check / Common Fixes                                  |
+|----------------------------------------------|----------------------------------------------------------------|
+| `/etc/snmp/snmpd.conf`                       | Main config file. Look for: `rocommunity public`, `sysLocation`, `sysContact` |
+| `grep -i community /etc/snmp/snmpd.conf`     | What community strings are allowed? (public is default read-only) |
+| `grep -i agentaddress /etc/snmp/snmpd.conf`  | Listening address/port? Default is UDP 161 on all interfaces. Add: `agentAddress udp:161` |
+| `sudo systemctl restart snmpd`               | Apply config changes                                           |
+| `journalctl -u snmpd -xe`                    | Recent snmpd service logs (errors on startup or queries)       |
+
+## Super Simple SNMP Troubleshooting Workflow
+
+1. On Linux server: `systemctl status snmpd` → running?
+2. Local test: `snmpwalk -v2c -c public localhost .1.3.6.1.2.1.1` → works?
+3. Check listening: `ss -tuln | grep 161` → UDP 161 open?
+4. Firewall: allow UDP 161 from monitoring IP/range
+5. From monitoring server: `snmpget -v2c -c public LINUX-IP sysName.0` → success?
+6. Still fails? Check `/etc/snmp/snmpd.conf` community string + restart snmpd
+
